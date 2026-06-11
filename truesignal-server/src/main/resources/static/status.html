@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Status — TrueSignal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fafafa; color: #2d3436; line-height: 1.6;
+        }
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .header h1 { font-size: 24px; font-weight: 600; margin-bottom: 12px; }
+        .overall-badge {
+            display: inline-block; padding: 8px 24px; border-radius: 20px;
+            font-size: 14px; font-weight: 600; letter-spacing: 0.5px;
+        }
+        .overall-badge.UP { background: #d4edda; color: #155724; }
+        .overall-badge.DOWN { background: #f8d7da; color: #721c24; }
+        .overall-badge.DEGRADED { background: #fff3cd; color: #856404; }
+        .overall-badge.UNKNOWN { background: #e2e3e5; color: #383d41; }
+        .monitor-card {
+            background: #fff; border-radius: 8px; padding: 20px;
+            margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .monitor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .monitor-name { font-size: 16px; font-weight: 600; }
+        .monitor-status {
+            display: inline-block; padding: 3px 12px; border-radius: 12px;
+            font-size: 12px; font-weight: 600; text-transform: uppercase;
+        }
+        .monitor-status.UP { background: #d4edda; color: #155724; }
+        .monitor-status.DOWN { background: #f8d7da; color: #721c24; }
+        .monitor-status.DEGRADED { background: #fff3cd; color: #856404; }
+        .monitor-status.UNKNOWN { background: #e2e3e5; color: #383d41; }
+        .uptime-row { display: flex; align-items: center; gap: 12px; }
+        .uptime-bar { display: flex; gap: 1px; flex: 1; height: 28px; }
+        .uptime-day {
+            flex: 1; border-radius: 2px; cursor: pointer; position: relative;
+            transition: transform 0.1s;
+        }
+        .uptime-day:hover { transform: scaleY(1.3); z-index: 1; }
+        .uptime-day.good { background: #00b894; }
+        .uptime-day.warn { background: #fdcb6e; }
+        .uptime-day.bad { background: #e17055; }
+        .uptime-day.none { background: #dfe6e9; }
+        .uptime-pct { font-size: 14px; font-weight: 600; min-width: 60px; text-align: right; }
+        .tooltip {
+            display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+            background: #2d3436; color: #fff; padding: 6px 10px; border-radius: 4px;
+            font-size: 11px; white-space: nowrap; margin-bottom: 4px; z-index: 10;
+        }
+        .uptime-day:hover .tooltip { display: block; }
+        .legend { display: flex; gap: 16px; justify-content: center; margin: 24px 0; font-size: 12px; color: #636e72; }
+        .legend-item { display: flex; align-items: center; gap: 4px; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+        .incidents-section { margin-top: 40px; }
+        .incidents-section h2 { font-size: 18px; margin-bottom: 16px; }
+        .incident-card {
+            background: #fff; border-left: 4px solid #e17055; border-radius: 4px;
+            padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .incident-card.resolved { border-left-color: #00b894; }
+        .incident-meta { font-size: 12px; color: #636e72; margin-top: 4px; }
+        .footer { text-align: center; margin-top: 48px; font-size: 12px; color: #b2bec3; }
+        .footer a { color: #6c5ce7; text-decoration: none; }
+        .loading { text-align: center; padding: 60px; color: #636e72; }
+        .error-msg { text-align: center; padding: 40px; color: #e17055; }
+        .slug-form {
+            text-align: center; margin-bottom: 32px; display: flex;
+            justify-content: center; gap: 8px;
+        }
+        .slug-form input {
+            padding: 8px 16px; border: 1px solid #dfe6e9; border-radius: 6px;
+            font-size: 14px; width: 200px;
+        }
+        .slug-form button {
+            padding: 8px 20px; background: #6c5ce7; color: #fff; border: none;
+            border-radius: 6px; font-size: 14px; cursor: pointer;
+        }
+        .slug-form button:hover { background: #5b4cdb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>System Status</h1>
+            <div class="slug-form">
+                <input type="text" id="slugInput" placeholder="Project slug" value="default">
+                <button onclick="loadStatus()">Load Status</button>
+            </div>
+            <div id="overallBadge"></div>
+        </div>
+
+        <div id="content"><div class="loading">Enter a project slug and click Load Status</div></div>
+
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#00b894"></div> Great</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#fdcb6e"></div> Degraded</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#e17055"></div> Downtime</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#dfe6e9"></div> No Data</div>
+        </div>
+
+        <div id="incidents" class="incidents-section"></div>
+
+        <div class="footer">Powered by <a href="/">TrueSignal</a></div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('project')) {
+            document.getElementById('slugInput').value = params.get('project');
+            loadStatus();
+        }
+
+        async function loadStatus() {
+            const slug = document.getElementById('slugInput').value.trim();
+            if (!slug) return;
+
+            document.getElementById('content').innerHTML = '<div class="loading">Loading...</div>';
+            document.getElementById('incidents').innerHTML = '';
+            document.getElementById('overallBadge').innerHTML = '';
+
+            try {
+                const resp = await fetch('/api/status/' + encodeURIComponent(slug));
+                if (!resp.ok) throw new Error('Project not found');
+                const data = await resp.json();
+                render(data);
+            } catch (e) {
+                document.getElementById('content').innerHTML =
+                    '<div class="error-msg">Could not load status: ' + e.message + '</div>';
+            }
+        }
+
+        function render(data) {
+            const labels = { UP: 'All Systems Operational', DOWN: 'Major Outage', DEGRADED: 'Partial Outage', UNKNOWN: 'Unknown' };
+            document.getElementById('overallBadge').innerHTML =
+                '<span class="overall-badge ' + data.overallStatus + '">' + (labels[data.overallStatus] || 'Unknown') + '</span>';
+
+            let html = '';
+            for (const mon of data.monitors) {
+                html += '<div class="monitor-card">';
+                html += '<div class="monitor-header">';
+                html += '<span class="monitor-name">' + esc(mon.name) + '</span>';
+                html += '<span class="monitor-status ' + mon.currentStatus + '">' + mon.currentStatus + '</span>';
+                html += '</div>';
+                html += '<div class="uptime-row">';
+                html += '<div class="uptime-bar">';
+
+                const days = Object.entries(mon.dailyUptime || {}).sort((a, b) => a[0].localeCompare(b[0]));
+                for (const [date, pct] of days) {
+                    let cls = 'none';
+                    if (pct >= 99) cls = 'good';
+                    else if (pct >= 95) cls = 'warn';
+                    else if (pct >= 0) cls = 'bad';
+                    html += '<div class="uptime-day ' + cls + '">';
+                    html += '<div class="tooltip">' + date + ': ' + pct.toFixed(1) + '%</div>';
+                    html += '</div>';
+                }
+
+                html += '</div>';
+                html += '<span class="uptime-pct">' + mon.uptimePercent.toFixed(2) + '%</span>';
+                html += '</div></div>';
+            }
+            document.getElementById('content').innerHTML = html;
+
+            let incHtml = '';
+            if (data.activeIncidents && data.activeIncidents.length > 0) {
+                incHtml += '<h2>Active Incidents</h2>';
+                for (const inc of data.activeIncidents) {
+                    incHtml += '<div class="incident-card">';
+                    incHtml += '<strong>' + esc(inc.monitorName || 'Monitor #' + inc.monitorId) + '</strong>';
+                    incHtml += '<div>' + esc(inc.cause || '') + '</div>';
+                    incHtml += '<div class="incident-meta">Started: ' + formatDate(inc.startedAt) + '</div>';
+                    incHtml += '</div>';
+                }
+            }
+            if (data.recentIncidents && data.recentIncidents.length > 0) {
+                incHtml += '<h2>Past Incidents</h2>';
+                for (const inc of data.recentIncidents) {
+                    incHtml += '<div class="incident-card resolved">';
+                    incHtml += '<strong>' + esc(inc.monitorName || 'Monitor #' + inc.monitorId) + '</strong>';
+                    incHtml += '<div>' + esc(inc.cause || '') + '</div>';
+                    incHtml += '<div class="incident-meta">Resolved: ' + formatDate(inc.resolvedAt) + '</div>';
+                    incHtml += '</div>';
+                }
+            }
+            document.getElementById('incidents').innerHTML = incHtml;
+        }
+
+        function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+        function formatDate(iso) {
+            if (!iso) return '—';
+            return new Date(iso).toLocaleString();
+        }
+    </script>
+</body>
+</html>

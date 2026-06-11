@@ -1,0 +1,38 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: truesignal-server
+  datasource:
+    url: jdbc:h2:file:./data/truesignal
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+truesignal:
+  quorum:
+    threshold: 0.5
+    evaluation-interval-ms: 5000
+  heartbeat:
+    timeout-suspect-ms: 15000
+    timeout-dead-ms: 30000
+    check-interval-ms: 10000
+  coordinator:
+    virtual-nodes: 150
+  ai:
+    enabled: false
+    api-key: ${GEMINI_API_KEY:}
+    model: gemini-2.0-flash
+    base-url: https://generativelanguage.googleapis.com

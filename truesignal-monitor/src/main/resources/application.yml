@@ -1,0 +1,12 @@
+server:
+  port: 0
+
+spring:
+  application:
+    name: truesignal-monitor
+
+truesignal:
+  monitor:
+    server-url: http://localhost:8080
+    region: local
+    heartbeat-interval-ms: 5000

@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TrueSignal</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 4L8 16v16c0 16 24 28 24 28s24-12 24-28V16z' fill='%231a1a2e' stroke='%236c5ce7' stroke-width='3'/%3E%3Cpath d='M16 34h8l4-10 4 18 4-14 4 6h8' fill='none' stroke='%2300b894' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="/css/dashboard.css" />
+  </head>
+  <body>
+    <aside class="app-sidebar">
+      <div class="sidebar-brand">
+        <svg class="brand-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M32 4L8 16v16c0 16 24 28 24 28s24-12 24-28V16z" fill="rgba(108,92,231,0.15)" stroke="#6c5ce7" stroke-width="3"/>
+          <path d="M16 34h8l4-10 4 18 4-14 4 6h8" stroke="#00b894" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="brand-text">TrueSignal</span>
+      </div>
+      <nav class="sidebar-nav">
+        <button type="button" class="nav-item active" data-nav="dashboard" title="Dashboard">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="9" rx="1" />
+            <rect x="14" y="3" width="7" height="5" rx="1" />
+            <rect x="14" y="12" width="7" height="9" rx="1" />
+            <rect x="3" y="16" width="7" height="5" rx="1" />
+          </svg>
+          <span class="nav-label">Dashboard</span>
+        </button>
+        <button type="button" class="nav-item" data-nav="monitors" title="Monitors">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+          <span class="nav-label">Monitors</span>
+        </button>
+        <button type="button" class="nav-item" data-nav="cluster" title="Cluster">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+          </svg>
+          <span class="nav-label">Cluster</span>
+        </button>
+        <button type="button" class="nav-item" data-nav="incidents" title="Incidents">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+          <span class="nav-label">Incidents</span>
+        </button>
+        <button type="button" class="nav-item" data-nav="status" title="Status Pages">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+          </svg>
+          <span class="nav-label">Status Pages</span>
+        </button>
+      </nav>
+    </aside>
+
+    <div class="app-main">
+      <header class="app-header">
+        <div class="header-logo">
+          <svg class="header-logo-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M32 4L8 16v16c0 16 24 28 24 28s24-12 24-28V16z" fill="rgba(108,92,231,0.10)" stroke="#6c5ce7" stroke-width="3"/>
+            <path d="M16 34h8l4-10 4 18 4-14 4 6h8" stroke="#00b894" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>TrueSignal</span>
+        </div>
+        <div class="connection-status">
+          <span class="connection-dot" id="sse-status-dot" aria-hidden="true"></span>
+          <span id="sse-status-text">Connecting…</span>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <div id="dashboard-view" class="view active">
+          <h1 class="view-title">Dashboard</h1>
+          <p class="view-subtitle">Fleet health and uptime at a glance.</p>
+          <div class="stats-grid">
+            <div class="stat-card stat-card--success">
+              <div class="stat-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+              <div class="stat-value" id="stat-monitors-up">—</div>
+              <div class="stat-label">Monitors up</div>
+            </div>
+            <div class="stat-card stat-card--danger">
+              <div class="stat-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              </div>
+              <div class="stat-value" id="stat-monitors-down">—</div>
+              <div class="stat-label">Monitors down</div>
+            </div>
+            <div class="stat-card stat-card--warning">
+              <div class="stat-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </div>
+              <div class="stat-value" id="stat-active-incidents">—</div>
+              <div class="stat-label">Active incidents</div>
+            </div>
+            <div class="stat-card stat-card--accent">
+              <div class="stat-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+              </div>
+              <div class="stat-value" id="stat-nodes-alive">—</div>
+              <div class="stat-label">Nodes alive</div>
+            </div>
+          </div>
+          <div class="dashboard-row">
+            <div class="gauge-card">
+              <h3>Overall uptime</h3>
+              <div class="gauge-wrap">
+                <canvas id="dashboard-uptime-gauge" aria-label="Overall uptime"></canvas>
+                <div class="gauge-center-label" id="dashboard-uptime-gauge-label">—</div>
+              </div>
+            </div>
+            <div class="chart-card" style="min-height: 280px; display: flex; flex-direction: column; justify-content: center">
+              <h3>Quick summary</h3>
+              <p style="margin: 0; color: var(--text-secondary); font-size: 0.9375rem; line-height: 1.6">
+                Total monitors <strong id="dash-total-monitors">—</strong>, paused
+                <strong id="dash-monitors-paused">—</strong>. Cluster:
+                <strong id="dash-total-nodes">—</strong> nodes registered.
+              </p>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Monitors</h3>
+            <div class="table-wrap">
+              <table class="data-table" id="dashboard-monitors-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>URL</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Uptime</th>
+                    <th>Last check</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="empty-state" id="dashboard-monitors-empty" style="display: none">No monitors yet.</div>
+          </div>
+        </div>
+
+        <div id="monitors-view" class="view">
+          <div class="toolbar">
+            <h1 class="view-title" style="margin: 0">Monitors</h1>
+            <button type="button" class="btn btn-primary" id="btn-open-add-monitor">Add monitor</button>
+          </div>
+          <div class="table-wrap card" style="padding: 0; overflow: hidden">
+            <table class="data-table" id="monitors-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>URL</th>
+                  <th>Interval</th>
+                  <th>Status</th>
+                  <th>Uptime</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="monitors-empty" style="display: none">No monitors configured.</div>
+        </div>
+
+        <div id="monitor-detail-view" class="view">
+          <div class="detail-header">
+            <div>
+              <button type="button" class="btn btn-ghost btn-sm" id="btn-back-monitors">← Monitors</button>
+              <h1 class="view-title" id="detail-monitor-name" style="margin-top: 8px">Monitor</h1>
+              <p class="view-subtitle mono" id="detail-monitor-url"></p>
+            </div>
+            <div class="detail-actions">
+              <button type="button" class="btn btn-secondary" id="btn-toggle-pause">Pause</button>
+              <button type="button" class="btn btn-danger" id="btn-delete-monitor">Delete</button>
+            </div>
+          </div>
+          <dl class="info-grid" id="detail-info-grid"></dl>
+          <div class="chart-card">
+            <h3>Response time</h3>
+            <div class="chart-canvas-wrap">
+              <canvas id="response-time-chart" aria-label="Response time"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Check history</h3>
+            <div class="table-wrap">
+              <table class="data-table" id="detail-checks-table">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Region</th>
+                    <th>Status</th>
+                    <th>ms</th>
+                    <th>Code</th>
+                    <th>Error</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="empty-state" id="detail-checks-empty" style="display: none">No checks recorded.</div>
+          </div>
+          <div id="detail-diagnosis-container"></div>
+          <div class="card">
+            <h3>Incidents</h3>
+            <div class="table-wrap">
+              <table class="data-table" id="detail-incidents-table">
+                <thead>
+                  <tr>
+                    <th>Started</th>
+                    <th>Status</th>
+                    <th>Cause</th>
+                    <th>Duration</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="empty-state" id="detail-incidents-empty" style="display: none">No incidents for this monitor.</div>
+          </div>
+        </div>
+
+        <div id="cluster-view" class="view">
+          <div class="toolbar">
+            <div>
+              <h1 class="view-title" style="margin: 0">Cluster</h1>
+              <p class="view-subtitle" style="margin: 4px 0 0">Probe nodes and heartbeats.</p>
+            </div>
+            <button type="button" class="btn btn-primary" id="btn-open-add-node">Add node</button>
+          </div>
+          <div class="cluster-grid" id="cluster-grid"></div>
+          <div class="empty-state" id="cluster-empty" style="display: none">No nodes registered.</div>
+        </div>
+
+        <div id="incidents-view" class="view">
+          <div class="toolbar">
+            <div>
+              <h1 class="view-title" style="margin: 0">Incidents</h1>
+              <p class="view-subtitle" style="margin: 4px 0 0">Active issues and recent history.</p>
+            </div>
+            <div class="form-group" style="margin: 0; min-width: 180px">
+              <select id="incidents-project-filter">
+                <option value="">All projects</option>
+              </select>
+            </div>
+          </div>
+          <div id="incidents-diagnosis-cards"></div>
+          <div class="card">
+            <h3>Active incidents</h3>
+            <div class="table-wrap">
+              <table class="data-table" id="active-incidents-table">
+                <thead>
+                  <tr>
+                    <th>Monitor</th>
+                    <th>Started</th>
+                    <th>Cause</th>
+                    <th>Duration</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="empty-state" id="active-incidents-empty" style="display: none">No active incidents.</div>
+          </div>
+          <div class="card">
+            <h3>Recent incidents</h3>
+            <div class="table-wrap">
+              <table class="data-table" id="recent-incidents-table">
+                <thead>
+                  <tr>
+                    <th>Monitor</th>
+                    <th>Started</th>
+                    <th>Resolved</th>
+                    <th>Duration</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="empty-state" id="recent-incidents-empty" style="display: none">No recent incidents.</div>
+          </div>
+        </div>
+
+        <div id="status-view" class="view">
+          <h1 class="view-title">Status pages</h1>
+          <p class="view-subtitle">Preview public status for a project.</p>
+          <div class="status-form-row">
+            <div class="form-group">
+              <label for="status-slug-input">Project</label>
+              <select id="status-slug-input">
+                <option value="default">default</option>
+              </select>
+            </div>
+            <button type="button" class="btn btn-primary" id="btn-load-status">Load status</button>
+          </div>
+          <div id="status-preview-wrap" style="display: none">
+            <div class="status-preview" id="status-preview"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div class="modal-overlay" id="modal-add-monitor" role="dialog" aria-modal="true" aria-labelledby="modal-add-title">
+      <div class="modal">
+        <h2 id="modal-add-title">Add monitor</h2>
+        <form id="form-add-monitor">
+          <div class="form-group">
+            <label for="fm-name">Name</label>
+            <input id="fm-name" name="name" type="text" required />
+          </div>
+          <div class="form-group">
+            <label for="fm-url">URL</label>
+            <input id="fm-url" name="url" type="url" required placeholder="https://" />
+          </div>
+          <div class="form-group">
+            <label for="fm-type">Type</label>
+            <select id="fm-type" name="type">
+              <option value="HTTP">HTTP</option>
+              <option value="TCP">TCP</option>
+              <option value="SSL">SSL</option>
+              <option value="DNS">DNS</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="fm-interval">Interval (seconds)</label>
+            <input id="fm-interval" name="intervalSeconds" type="number" min="1" value="60" />
+          </div>
+          <div class="form-group">
+            <label for="fm-timeout">Timeout (ms)</label>
+            <input id="fm-timeout" name="timeoutMs" type="number" min="1" value="10000" />
+          </div>
+          <div class="form-group">
+            <label for="fm-expected">Expected status code</label>
+            <input id="fm-expected" name="expectedStatusCode" type="number" min="100" value="200" />
+          </div>
+          <div class="form-group">
+            <label for="fm-keyword">Keyword (optional)</label>
+            <input id="fm-keyword" name="keyword" type="text" />
+          </div>
+          <div class="form-group">
+            <label for="fm-project">Project</label>
+            <select id="fm-project" name="projectSlug">
+              <option value="default">default</option>
+              <option value="__new__">+ New project...</option>
+            </select>
+          </div>
+          <div class="form-group" id="fm-project-custom-group" style="display: none">
+            <label for="fm-project-custom">New project slug</label>
+            <input id="fm-project-custom" type="text" placeholder="my-project" />
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="btn-cancel-add-monitor">Cancel</button>
+            <button type="submit" class="btn btn-primary">Create</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-add-node" role="dialog" aria-modal="true" aria-labelledby="modal-node-title">
+      <div class="modal">
+        <h2 id="modal-node-title">Add a monitor node</h2>
+        <p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0 0 16px; line-height: 1.5">
+          Each node is a separate process. Configure the region and port below, then run the command on your machine.
+        </p>
+        <div class="form-group">
+          <label for="node-region">Region</label>
+          <input id="node-region" type="text" value="US-East" />
+        </div>
+        <div class="form-group">
+          <label for="node-port">Port</label>
+          <input id="node-port" type="number" value="8084" min="1024" />
+        </div>
+        <div class="form-group">
+          <label>Run this command</label>
+          <div class="cmd-box" id="node-cmd-box">
+            <code id="node-cmd-text"></code>
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-copy-node-cmd" title="Copy">Copy</button>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-add-node">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/charts.js"></script>
+    <script src="/js/app.js"></script>
+  </body>
+</html>
